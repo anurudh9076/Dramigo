@@ -5,17 +5,17 @@
 
 {% if searched %}
 <h1>you searched for {{ searched }}</h1>
-
+{% load static %}
 {% for doctor in doctors %}
       <center>
           
 
      <div class="card" style="width: 18rem;">
-        <img src="..." class="card-img-top" alt="...">
+       <img src="{{doctor.profilePicture.url}}" alt="this is image">
         <div class="card-body">
           <h5 class="card-title">{{doctor}}</h5>
           <h6 class="card-text">{{doctor.speciality}}</h6> 
-            Age: {{doctor.age}} <br>
+          Age: {{doctor.age}} <br>
             Mobile No: {{doctor.mobNum}} <br>
             City: {{doctor.city}} <br>
             {% if doctor.availability %}
