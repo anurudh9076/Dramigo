@@ -1,23 +1,31 @@
 from django.shortcuts import render
-from .models import Doctor,City
+from .models import Doctor,City,Speciality
+from .filters import DoctorFilter
 
 # Create your views here.
 
 def search_doctors(request):
+    
     if request.method == "POST":
-        searched = request.POST['searched']
-        searched=searched.capitalize()
-        city=City.objects.get(name=searched)
-        if(not city):
-            print("no city")
+        if(request.POST['city'] == "select a city" and request.POST['speciality']=='select a speciality'):
+            return render (request,'search_doctors.html',{'searched':False})
+        elif(request.POST['speciality']=='select a speciality'):
+            city=City.objects.get(name=request.POST['city'])
+            doctors = Doctor.objects.filter(city=city.id)
+        elif(request.POST['city'] == 'select a city'):
+            speciality= Speciality.objects.get(name=request.POST['speciality'])
+            doctors = Doctor.objects.filter(city=speciality.id)
         else:
-            print("city  matched")
-            
-        doctors = Doctor.objects.filter(city=city.id)
-        return render (request,'search_doctors.html',{'searched':searched,'doctors':doctors})
+            city=City.objects.get(name=request.POST['city'])
+            speciality= Speciality.objects.get(name=request.POST['speciality'])
+            doctors = Doctor.objects.filter(city=city.id,speciality=speciality.id)
+
+        return render (request,'search_doctors.html',{'doctors':doctors,'searched':True})
     else:
         return render (request,'search_doctors.html',{})
 
 def home(request):
-    return render(request,'home.html')
+    cities =City.objects.all()
+    sps = Speciality.objects.all()
+    return render(request,'home.html',{'cities':cities,'sps':sps})
 
