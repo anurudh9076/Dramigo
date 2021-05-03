@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from .models import Doctor,City,Speciality
 from .filters import DoctorFilter
-
+from .forms import DoctorForm
 # Create your views here.
 
 def search_doctors(request):
@@ -28,4 +28,18 @@ def home(request):
     cities =City.objects.all()
     sps = Speciality.objects.all()
     return render(request,'home.html',{'cities':cities,'sps':sps})
+
+
+def createDoctor(request):
+    form=DoctorForm()
+    if request.method == 'POST':
+        form = DoctorForm(request.POST)
+        if form.is_valid():
+            form.save()
+        return redirect('home')
+        print("printing",request.POST)
+
+    context = {'form':form}
+
+    return render(request,'appoint_form.html',context)    
 

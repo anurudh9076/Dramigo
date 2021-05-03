@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block content %}
+<center>
+    <form action="register" method="POST">
+        {% csrf_token %}
+        <input type="text" name="first_name" placeholder="First Name"><br>
+        <input type="text" name="last_name" placeholder="Last Name"><br>
+        <input type="radio" name="Type" value="customer" id="Customer" checked>
+        <label for="Customer">Customer</label><br>
+        <input type="radio" name="Type" value="doctor" id="Doc">
+        <label for="doc">Doctor</label><br>
+        <input type="text" name="username" placeholder="Username"><br>
+        <input type="email" name="email" placeholder="Email"><br>
+        <input type="password" name="password1" placeholder="Password"><br>
+        <input type="password" name="password2" placeholder="Confirm Password"><br>
+
+        <input type="submit">
+    </form> 
+    <div>
+        {% for message in messages %}
+          <h2>{{message}}</h2>
+          {% endfor %}
+    </div>
+</center>
+{% endblock %}    
