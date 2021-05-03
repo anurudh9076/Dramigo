@@ -50,7 +50,7 @@ class Doctor(models.Model):
     user = models.OneToOneField(User,on_delete=models.CASCADE,null=True)
     age = models.IntegerField(null=True,blank=True)
     mobNum = models.CharField(max_length=100,blank=True)
-    profilePicture = models.ImageField(upload_to='profile_pic',blank=True)
+    profilePicture = models.ImageField(upload_to='profile_pic/',blank=True,null=True)
     speciality = models.ForeignKey(Speciality,null=True,on_delete=models.CASCADE,blank=True)
     city = models.ForeignKey(City,null=True,on_delete=models.CASCADE,blank=True)
     availability = models.BooleanField(default=True)

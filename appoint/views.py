@@ -11,7 +11,7 @@ def doctor_profile(request):
     if not user.is_doctor:
         redirect('home')
     doctor=Doctor.objects.get(user=user.id)
-    form = DoctorForm(request.POST or None,instance=doctor)
+    form = DoctorForm(request.POST or None,request.FILES or None,instance=doctor)
     form1=  UserForm(instance=user)
     if form.is_valid():
         form.save()
@@ -78,17 +78,17 @@ def register(request,des):
             print('user created')
             user=User.objects.get(username=request.POST['username'])
             if(des =='doctor'):
-                print('hi_dr')
                 user.is_doctor=True
                 user.save()
                 doctor=Doctor.objects.create(user=user)
                 doctor.save()
+
             elif(des == 'patient'):
                 print('hi_pat')
                 user.is_patient=True
                 user.save()
-                messages.info(request,'Successfully Registered')
-                return redirect('login',des)
+            messages.info(request,'Successfully Registered')
+            return redirect('login',des)
         else:
             messages.info(request,'password is not matching')
             return redirect('register',des)

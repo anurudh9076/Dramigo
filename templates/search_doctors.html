@@ -10,8 +10,10 @@
           
 
      <div class="card" style="width: 18rem;">
+      {% if doctor.profilePicture %}
        <img src="{{doctor.profilePicture.url}}" alt="this is image">
-        <div class="card-body">
+      {% endif %}
+       <div class="card-body">
           <h5 class="card-title">{{doctor}}</h5>
           <h6 class="card-text">{{doctor.speciality}}</h6> 
           Age: {{doctor.age}} <br>
