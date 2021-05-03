@@ -1,10 +1,26 @@
 from django.shortcuts import render,redirect
 from .models import Doctor,City,Speciality
 from .filters import DoctorFilter
-from .forms import UserForm,User
+from .forms import UserForm,User,DoctorForm
 from django.contrib.auth.models import auth
 from django.contrib import messages
 # Create your views here.
+
+def doctor_profile(request):
+    user=request.user
+    if not user.is_doctor:
+        redirect('home')
+    doctor=Doctor.objects.get(user=user.id)
+    form = DoctorForm(request.POST or None,instance=doctor)
+    form1=  UserForm(instance=user)
+    if form.is_valid():
+        form.save()
+        messages.info(request,'Details Updated Successfully')
+        return redirect('doctor-profile')
+
+    return render (request,'doctor_profile.html',{'form':form,'user':user,'form1':form1})
+
+    
 
 
 
@@ -65,6 +81,8 @@ def register(request,des):
                 print('hi_dr')
                 user.is_doctor=True
                 user.save()
+                doctor=Doctor.objects.create(user=user)
+                doctor.save()
             elif(des == 'patient'):
                 print('hi_pat')
                 user.is_patient=True
