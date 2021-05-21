@@ -5,6 +5,7 @@ from django.contrib.auth.models import PermissionsMixin
 from django.utils.translation import gettext_lazy as _
 from django.utils import timezone
 
+
 from .managers import CustomUserManager
 
 # Create your models here.
@@ -44,10 +45,17 @@ class Speciality(models.Model):
     def __str__(self):
         return self.name
 
+class Slots(models.Model):
+    time=models.TimeField()
+    def __str__(self):
+        return self.time.strftime("%I:%M %p")
+    
+
 
 
 class Doctor(models.Model):
     user = models.OneToOneField(User,on_delete=models.CASCADE,null=True)
+    slots=models.ManyToManyField(Slots,null=True)
     age = models.IntegerField(null=True,blank=True)
     mobNum = models.CharField(max_length=100,blank=True)
     profilePicture = models.ImageField(upload_to='profile_pic/',blank=True,null=True)
@@ -57,5 +65,29 @@ class Doctor(models.Model):
 
     def __str__(self):
         return self.user.first_name + " " +self.user.last_name
+
+class Appointment(models.Model):
+    doctor=models.ForeignKey(Doctor,on_delete=models.CASCADE,null=True)
+    slot=models.ForeignKey(Slots,on_delete=models.CASCADE,null=True)
+    date=models.DateField(blank=True,default=False,null=True)
+    status_choices=(('cancelled','Cancelled'),('pending','Pending'),('completed','Completed'))
+    status=models.CharField(max_length=10,choices=status_choices,default='pending',null=True)
+
+    def __str__(self):
+        return self.doctor.user.first_name+" " +self.doctor.user.last_name+ ' ' +self.date.strftime("%m/%d/%Y") +' '+ self.slot.time.strftime("%H:%M %p")
+
+
+class Patient(models.Model):
+    user=models.OneToOneField(User,on_delete=models.CASCADE,null=True)
+    appointment=models.ManyToManyField(Appointment,null=True)
+
+    def __str__(self):
+        return self.user.first_name + " " +self.user.last_name
+
+
+
+
+
+
     
 

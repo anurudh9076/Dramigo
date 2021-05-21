@@ -25,7 +25,7 @@
                 <p class="card-text">Availability: No</p> <br>
             {% endif %}
 
-          <a href="#" class="btn btn-primary">Make an Appointment</a>
+          <a href="{% url 'make-appointment' doctor.id %}" class="btn btn-primary">Make an Appointment</a>
         </div>
       </div>
       <br>

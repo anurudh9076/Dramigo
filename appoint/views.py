@@ -1,10 +1,50 @@
 from django.shortcuts import render,redirect
-from .models import Doctor,City,Speciality
+from .models import Doctor,City,Speciality,Appointment,Slots
 from .filters import DoctorFilter
-from .forms import UserForm,User,DoctorForm
+from .forms import UserForm,User,DoctorForm,AppointmentForm
 from django.contrib.auth.models import auth
 from django.contrib import messages
 # Create your views here.
+def appoint(request):
+    #doctor=Doctor.objects.get(id=doctor_id)
+    if request.method=='POST':
+        slot=Slots.objects.get(id=int(request.POST['slot']))
+        date=request.POST['date']
+        doctor_id=request.POST['doctor_id']
+
+        doctor_id=int(doctor_id)
+        doctor =Doctor.objects.get(id=doctor_id)
+        print(doctor_id)
+        appointment=Appointment.objects.create(slot=slot,date=date,doctor=doctor,status='pending')
+        appointment.save()
+        print("appointment created")
+        return render (request,'make_appointment.html')
+
+    return redirect('/')
+
+def make_appointment(request,doctor_id):
+    dated=False
+    if(request.method=='POST'):
+        dated=True
+        date=request.POST['date']
+        doctor=Doctor.objects.get(id=doctor_id)
+        slots=doctor.slots.all()
+        pre_appointment=Appointment.objects.filter(doctor=doctor.id,date=date)
+        pre_slosts = []
+        slots=list(slots)
+        for ap in pre_appointment:
+            slots.remove(ap.slot)
+            #pre_slosts=pre_slosts.append(ap.slot)                
+        
+        # for slot in all_slots :
+        #     if slot not in pre_slosts:
+        #         slots=slots.append(slot)
+
+        return render(request,'make_appointment.html',{'slots':slots,'dated':dated,'date':date,'doctor':doctor})
+    else:
+        return render(request,'make_appointment.html',{'dated':dated})
+
+
 
 def doctor_profile(request):
     user=request.user
@@ -68,10 +108,10 @@ def register(request,des):
         if password1==password2 :
          if User.objects.filter(username=username).exists():
             messages.info(request,'Username is taken')
-            return redirect('register')
+            return redirect('register',des)
          elif User.objects.filter(email=email).exists():
             messages.info(request,'email is taken')
-            return redirect('register')
+            return redirect('register',des)
          else:  
             user = User.objects.create_user(username=username,password=password1,email=email,first_name=first_name,last_name=last_name)
             user.save()
