@@ -1,26 +1,71 @@
 from django.shortcuts import render,redirect
-from .models import Doctor,City,Speciality,Appointment,Slots
+from .models import Doctor,City,Speciality,Appointment,Slots,Patient
 from .filters import DoctorFilter
-from .forms import UserForm,User,DoctorForm,AppointmentForm
+from .forms import UserForm,User,DoctorForm
 from django.contrib.auth.models import auth
 from django.contrib import messages
+import datetime
 # Create your views here.
+def done_appointment(request,app_id):
+    user=request.user
+    if user is None:
+        return redirect('/')
+    if user.is_patient:
+        return redirect('/')
+    
+    appointment=Appointment.objects.get(id=app_id)
+    appointment.status='Completed'
+    appointment.editable=False
+    appointment.save()
+    return redirect('view-appointments')
+
+def cancel_appointment(request,app_id):
+    user=request.user
+    if user is None:
+        return redirect('/')
+    appointment=Appointment.objects.get(id=app_id)
+    appointment.status='Cancelled'
+    if user.is_doctor:
+        appointment.cancelled_by_doctor=True
+    else:
+        appointment.cancelled_by_patient=True
+    appointment.editable=False
+    appointment.save()
+    return redirect('view-appointments')
+def view_appointments(request):
+    user=request.user
+    if user is None:
+        redirect('home')
+    if user.is_doctor:
+        doctor=Doctor.objects.get(user=request.user.id)
+        appointments=Appointment.objects.filter(doctor=doctor)
+        editable=[]
+        for ap in appointments:
+            if ap.status!="Pending":
+                ap.editable=False
+            if ap.date < datetime.date.today():
+                ap.editable=False
+            if ap.date == datetime.date.today():
+                if  ap.slot.time < datetime.time.now():
+                    ap.editable=False
+            ap.save()             
+        return render(request,'view_appointments.html',{'appointments':appointments})
+    if user.is_patient:
+        appointments=Appointment.objects.filter(patient=user.id)
+        return render(request,'view_appointments.html',{'appointments':appointments})
+
 def appoint(request):
     #doctor=Doctor.objects.get(id=doctor_id)
     if request.method=='POST':
         slot=Slots.objects.get(id=int(request.POST['slot']))
         date=request.POST['date']
-        doctor_id=request.POST['doctor_id']
-
-        doctor_id=int(doctor_id)
-        doctor =Doctor.objects.get(id=doctor_id)
-        print(doctor_id)
-        appointment=Appointment.objects.create(slot=slot,date=date,doctor=doctor,status='pending')
+        doctor =Doctor.objects.get(id=int(request.POST['doctor_id']))
+        appointment=Appointment.objects.create(slot=slot,date=date,patient=request.user,doctor=doctor,status='Pending')
         appointment.save()
         print("appointment created")
         return render (request,'make_appointment.html')
 
-    return redirect('/')
+    return redirect('/make-appointment')
 
 def make_appointment(request,doctor_id):
     dated=False
@@ -33,12 +78,8 @@ def make_appointment(request,doctor_id):
         pre_slosts = []
         slots=list(slots)
         for ap in pre_appointment:
-            slots.remove(ap.slot)
-            #pre_slosts=pre_slosts.append(ap.slot)                
-        
-        # for slot in all_slots :
-        #     if slot not in pre_slosts:
-        #         slots=slots.append(slot)
+            if ap.status!='Cancelled':
+                slots.remove(ap.slot)
 
         return render(request,'make_appointment.html',{'slots':slots,'dated':dated,'date':date,'doctor':doctor})
     else:

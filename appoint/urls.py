@@ -12,6 +12,9 @@ urlpatterns = [
     path('doctor_profile',views.doctor_profile,name='doctor-profile'),
     path('make_appointment/<doctor_id>',views.make_appointment,name='make-appointment'),
     path('appoint',views.appoint,name='appoint'),
+    path('view_appointments',views.view_appointments,name='view-appointments'),
+    path('cancel_appointment/<app_id>',views.cancel_appointment,name='cancel-appointment'),
+    path('done_appointment/<app_id>',views.done_appointment,name='done-appointment'),
 
    
 ]

@@ -2,10 +2,6 @@ from django import forms
 from django.forms import ModelForm
 from .models import Doctor,User
 
-class DateInput(forms.DateInput):
-    input_type='date'
-class AppointmentForm(forms.Form):
-    date=forms.DateField(widget=DateInput)
 
 class DoctorForm(ModelForm):
     class Meta:

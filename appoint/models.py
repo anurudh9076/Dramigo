@@ -67,11 +67,15 @@ class Doctor(models.Model):
         return self.user.first_name + " " +self.user.last_name
 
 class Appointment(models.Model):
+    patient=models.ForeignKey(User,on_delete=models.CASCADE,null=True)
     doctor=models.ForeignKey(Doctor,on_delete=models.CASCADE,null=True)
     slot=models.ForeignKey(Slots,on_delete=models.CASCADE,null=True)
     date=models.DateField(blank=True,default=False,null=True)
-    status_choices=(('cancelled','Cancelled'),('pending','Pending'),('completed','Completed'))
-    status=models.CharField(max_length=10,choices=status_choices,default='pending',null=True)
+    status_choices=(('Cancelled','Cancelled'),('Pending','Pending'),('Completed','Completed'))
+    status=models.CharField(max_length=10,choices=status_choices,default='Pending',null=True)
+    editable=models.BooleanField(default=True,blank=True,null=True)
+    cancelled_by_doctor=models.BooleanField(default=False,blank=True,null=True)
+    cancelled_by_patient=models.BooleanField(default=False,blank=True,null=True)
 
     def __str__(self):
         return self.doctor.user.first_name+" " +self.doctor.user.last_name+ ' ' +self.date.strftime("%m/%d/%Y") +' '+ self.slot.time.strftime("%H:%M %p")
@@ -79,7 +83,7 @@ class Appointment(models.Model):
 
 class Patient(models.Model):
     user=models.OneToOneField(User,on_delete=models.CASCADE,null=True)
-    appointment=models.ManyToManyField(Appointment,null=True)
+    #appointment=models.ManyToManyField(Appointment,null=True)
 
     def __str__(self):
         return self.user.first_name + " " +self.user.last_name
