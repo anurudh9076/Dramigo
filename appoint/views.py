@@ -5,6 +5,11 @@ from .forms import UserForm,User,DoctorForm
 from django.contrib.auth.models import auth
 from django.contrib import messages
 import datetime
+import smtplib
+import django
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+
 # Create your views here.
 def done_appointment(request,app_id):
     user=request.user
@@ -45,9 +50,10 @@ def view_appointments(request):
                 ap.editable=False
             if ap.date < datetime.date.today():
                 ap.editable=False
-            if ap.date == datetime.date.today():
-                if  ap.slot.time < datetime.time.now():
-                    ap.editable=False
+            '''if ap.date == datetime.date.today():
+                now = datetime.datetime.now()
+                if  ap.slot.time <  now:
+                    ap.editable=False'''
             ap.save()             
         return render(request,'view_appointments.html',{'appointments':appointments})
     if user.is_patient:
@@ -63,6 +69,47 @@ def appoint(request):
         appointment=Appointment.objects.create(slot=slot,date=date,patient=request.user,doctor=doctor,status='Pending')
         appointment.save()
         print("appointment created")
+        #sending the emails to doctor and client
+        sender_address = 'dramigo9076@gmail.com'
+        sender_pass = 'Dramigo@12345'
+        session = smtplib.SMTP('smtp.gmail.com', 587) #use gmail with port
+        session.starttls() #enable security
+        session.login(sender_address, sender_pass) #login with mail_id and password
+       
+        receiver_address=request.user.email
+        message = MIMEMultipart()
+        message['From'] = sender_address
+        message['To'] = receiver_address
+        message['Subject'] = 'Appointment Of Dramigo'   #The subject line
+        #The body and the attachments for the mail
+        mail_content='Hello '+request.user.first_name+'\n'+'you have booked an apppointment on Dramigo.'
+        mail_content+='See below details\n'+'Doctor: '+doctor.user.first_name+' '+doctor.user.last_name
+        mail_content+='\nDate: '+date + '\nTime: '+slot.time.strftime('%H:%M %p')+'.'
+        message.attach(MIMEText(mail_content, 'plain'))
+        #Create SMTP session for sending the mail
+        
+        text = message.as_string()
+        session.sendmail(sender_address, receiver_address, text)
+        #to doctor
+        receiver_address=doctor.user.email
+        message1 = MIMEMultipart()
+        message1['From'] = sender_address 
+        message1['To'] = receiver_address
+        message1['Subject'] = 'Appointment Of Dramigo'
+        
+        
+       
+        mail_content=""
+        mail_content='Hello '+doctor.user.first_name+'\n'+'you have an apppointment on Dramigo.'
+        mail_content+='See below details\n'+'Patient: '+request.user.first_name+' '+request.user.last_name
+        mail_content+='\nDate: '+date + '\nTime: '+slot.time.strftime('%H:%M %p')+'.'
+        message1.attach(MIMEText(mail_content, 'plain'))
+        text = message1.as_string()
+        session.sendmail(sender_address, receiver_address, text)
+
+        session.quit()
+        print('Mail Sent')
+
         return render (request,'make_appointment.html')
 
     return redirect('/make-appointment')
